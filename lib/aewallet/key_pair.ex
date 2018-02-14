@@ -345,7 +345,7 @@ defmodule Aewallet.KeyPair do
   end
 
   @spec compress(binary()) :: binary()
-  defp compress(<<_prefix::size(8), x_coordinate::size(256), y_coordinate::size(256)>>) do
+  def compress(<<_prefix::size(8), x_coordinate::size(256), y_coordinate::size(256)>>) do
     prefix = case rem(y_coordinate, 2) do
       0 -> 0x02
       _ -> 0x03
