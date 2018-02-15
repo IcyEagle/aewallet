@@ -168,9 +168,13 @@ defmodule Aewallet.Wallet do
   @spec get_public_key(String.t(), String.t(), network_opts()) :: tuple()
   def get_public_key(path, password, opts \\ []) do
     {:ok, private_key} = Wallet.get_private_key(path, password, opts)
-    public_key = KeyPair.generate_pub_key(private_key)
 
-    {:ok, public_key}
+    compressed_pub_key =
+      private_key
+      |> KeyPair.generate_pub_key()
+      |> KeyPair.compress()
+
+    {:ok, compressed_pub_key}
   end
 
   @doc """

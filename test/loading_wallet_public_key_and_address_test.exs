@@ -14,12 +14,12 @@ defmodule LoadPublicKeyAndAddressTest do
       Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-11-59-25", "password")
 
     assert public_key ==
-      Base.decode16!("0443C79213D6301FB19C50CEFCBBC2EE80CD53ACEFE9D4FB1FEE4E1DD3863F643095C24FD54EF4959A554B3461726B789D4D8E0C97526C3A18A39E16B326FF6D5A")
+      Base.decode16!("0243C79213D6301FB19C50CEFCBBC2EE80CD53ACEFE9D4FB1FEE4E1DD3863F6430")
 
     {:ok, address} =
       Wallet.get_address("test/test_wallets/wallet--2018-1-17-11-59-25", "password")
 
-    assert address == "Aw1EeJtR3xNmi5fy6Mu9xL8xqzKPzrY36w"
+    assert address == "ApgKtK5yi3npi3c48U53ESegbHSfsyYWWU"
   end
 
   test "validate master public key and address 2" do
@@ -31,12 +31,12 @@ defmodule LoadPublicKeyAndAddressTest do
       Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-12-9-55", "password")
 
     assert public_key ==
-      Base.decode16!("04C64160211603FB738BFD69AFEC4BC675D7AEDB7BDD06D5CC661D33EA3021AAD4FDA318B310487FBFF91DEC887F13E57394EEBB3FD34876F1793F7D427BD17718")
+      Base.decode16!("02C64160211603FB738BFD69AFEC4BC675D7AEDB7BDD06D5CC661D33EA3021AAD4")
 
     {:ok, address} =
       Wallet.get_address("test/test_wallets/wallet--2018-1-17-12-9-55", "password")
 
-    assert address == "1LZsufgWrF6WbS5e39J4jiMJNwWpHEGA75"
+    assert address == "121jXTz93jqEqDSp2gSJCKTBvbWYWeJD8i"
   end
 
    test "validate master public key and address 3" do
@@ -48,11 +48,11 @@ defmodule LoadPublicKeyAndAddressTest do
       Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-12-12-16", "password")
 
     assert public_key ==
-      Base.decode16!("04169FE30E399CC4B6BF5CFCB8CD7091D462D5B50E8082C7D9C0A54080E77BE056777BB1596050E34462131AA07C24196E108CBD890AC9A7EA19665BB5F6E6A142")
+      Base.decode16!("02169FE30E399CC4B6BF5CFCB8CD7091D462D5B50E8082C7D9C0A54080E77BE056")
 
     {:ok, address} =
       Wallet.get_address("test/test_wallets/wallet--2018-1-17-12-12-16", "password")
 
-    assert address == "Ar4VeTDWQFE97LDFQ2De2Gg4fHf2FHeRqP"
+    assert address == "AsZ6sZxqJrD7WGYBURJnKpxdJKSfyjK1j9"
   end
 end

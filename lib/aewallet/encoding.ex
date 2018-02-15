@@ -13,22 +13,20 @@ defmodule Aewallet.Encoding do
   Encodes public key to a human readable format.
 
   ## Examples
-      iex> Aewallet.Encoding.encode(:ae, pub_key)
+      iex> Aewallet.Encoding.encode(compressed_pub_key, :ae)
       "ae1qq04nuehhr26nz7ggtgaqq939f9hsaq5hrlhsjrlcg5wngpq4pzc968kfa8u"
 
-      iex> Aewallet.Encoding.encode(:btc, pub_key)
+      iex> Aewallet.Encoding.encode(compressed_pub_key, :btc)
       "btc1qq04nuehhr26nz7ggtgaqq939f9hsaq5hrlhsjrlcg5wngpq4pzc963alrmy"
   """
   @spec encode(currency(), binary()) :: String.t()
-  def encode(currency, pub_key) do
-    compressed_key = KeyPair.compress(pub_key)
-
+  def encode(compressed_pub_key, currency) do
     case currency do
       :ae ->
-        SegwitAddr.encode("ae", 0, :binary.bin_to_list(compressed_key))
+        SegwitAddr.encode("ae", 0, :binary.bin_to_list(compressed_pub_key))
 
       :btc ->
-        SegwitAddr.encode("btc", 0, :binary.bin_to_list(compressed_key))
+        SegwitAddr.encode("btc", 0, :binary.bin_to_list(compressed_pub_key))
 
       _ ->
         throw("The given currency '#{currency}' is not supported. Please use :ae or :btc")
