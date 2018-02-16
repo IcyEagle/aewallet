@@ -28,7 +28,8 @@ defmodule Aewallet.Mixfile do
       {:httpoison, "~> 0.13.0"},
       {:libsecp256k1, [github: "mbrix/libsecp256k1", manager: :rebar]},
       {:excoveralls, "~> 0.7", only: :test},
-      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
+      {:bip0173, "~> 0.1.2"}
     ]
   end
 end
