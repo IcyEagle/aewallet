@@ -8,13 +8,16 @@ defmodule Aewallet.KeyPair do
   alias Aewallet.Structs.Bip32PrivKey, as: PrivKey
 
   @typedoc "Wallet option value"
-  @type value :: :ae | :btc
+  @type wallet_type :: :ae | :btc
 
   @typedoc "Type of network"
   @type network :: :mainnet | :testnet
 
+  @typedoc "Type of key"
+  @type key_type :: :public | :private
+
   @typedoc "Keyword options list"
-  @type opts :: [{key, value}]
+  @type opts :: [{key, wallet_type}]
 
   @typedoc "Pivate extended key struct"
   @type privkey :: %PrivKey{}
@@ -28,15 +31,20 @@ defmodule Aewallet.KeyPair do
   @typedoc "Public key type"
   @type pubkey_type :: :compressed
 
+  @typedoc "Serialized data"
+  @type serialized_data :: %{
+    depth: binary,
+    fingerprint: binary,
+    child_num: binary ,
+    chain_code: binary,
+    ser_key: binary
+  }
+
   @typedoc "Structure of extended key"
   @type t :: %{
-          version: binary,
-          depth: binary,
-          fingerprint: binary,
-          child_num: binary ,
-          chain_code: binary,
-          ser_key: binary
-        }
+    version: binary,
+    serialized_data: serialized_data()
+  }
 
   # Constant for generating the private_key / chain_code
   @bitcoin_key "Bitcoin seed"
@@ -185,26 +193,25 @@ defmodule Aewallet.KeyPair do
       iex> KeyPair.format_key(key)
       "xprv9ykQk99RM1ihJkrSMmfn28SEZiF79geaDvMHGJz6b2zmSvzdmWmru2ScVujbbkJ9kVUrVNNhER5373sZSUcfJYhNSGyg64VB9jm5aP9oAga"
   """
-  @spec format_key(map()) :: String.t()
+  @spec format_key(key()) :: String.t()
   def format_key(key) when is_map(key) do
     {prefix, bip32_serialization} = serialize(key)
     Base58Check.encode58check(prefix, bip32_serialization)
   end
 
   # Deriving private keys.
-  @spec derive(map(), String.t()) :: map()
+  @spec derive(key(), String.t()) :: map()
   def derive(key, <<"m/", path::binary>>) do
     derive(key, path, :private)
   end
 
   # Deriving public keys.
-  @spec derive(map(), String.t()) :: map()
   def derive(key, <<"M/", path::binary>>) do
     derive(key, path, :public)
   end
 
-  @spec derive(map(), String.t(), tuple()) :: map()
-  defp derive(key, path, network) do
+  @spec derive(key(), String.t(), key_type()) :: map()
+  defp derive(key, path, key_type) do
     KeyPair.derive_pathlist(
       key,
       :lists.map(fn(elem) ->
@@ -220,22 +227,18 @@ defmodule Aewallet.KeyPair do
             num
         end
       end, :binary.split(path, <<"/">>, [:global])),
-      network)
+      key_type)
   end
 
-  @spec derive_pathlist(privkey(), list(), tuple()) :: privkey()
+  @spec derive_pathlist(key(), list(), key_type()) :: key()
   def derive_pathlist(%PrivKey{} = key, [], :private), do: key
   def derive_pathlist(%PrivKey{} = key, [], :public), do: KeyPair.to_public_key(key)
-
-  @spec derive_pathlist(pubkey(), list(), tuple()) :: pubkey()
   def derive_pathlist(%PubKey{} = key, [], :public), do: key
-
-  @spec derive_pathlist(map(), list(), tuple()) :: map()
-  def derive_pathlist(key, pathlist, network) do
+  def derive_pathlist(key, pathlist, key_type) do
     [index | rest] = pathlist
     key
     |> derive_key(index)
-    |> KeyPair.derive_pathlist(rest, network)
+    |> KeyPair.derive_pathlist(rest, key_type)
   end
 
   @spec derive_key(privkey(), integer()) :: privkey()
@@ -293,7 +296,7 @@ defmodule Aewallet.KeyPair do
     raise(RuntimeError, "Cannot derive Public Hardened child")
   end
 
-  @spec derive_key(map(), integer(), binary(), integer()) :: map()
+  @spec derive_key(key(), binary(), binary(), integer()) :: key()
   defp derive_key(key, child_key, child_chain, index) when is_map(key) do
     %{key |
       key: child_key,
@@ -326,7 +329,7 @@ defmodule Aewallet.KeyPair do
     end
   end
 
-  @spec generate_wallet_address(binary(), tuple(), opts()) :: String.t()
+  @spec generate_wallet_address(binary(), network(), wallet_type()) :: String.t()
   def generate_wallet_address(_public_key, network, _wallet_type) do
     throw("The #{network} network is not supported! Please use :mainnet or :testnet")
   end

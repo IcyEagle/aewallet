@@ -52,13 +52,13 @@ defmodule Aewallet.Wallet do
       {:ok, "whisper edit clump violin blame few ancient casual
       sand trip update spring", "home/desktop/wallet/...", :btc}
   """
-  @spec create_wallet(String.t(), String.t()) :: String.t()
+  @spec create_wallet(String.t(), String.t()) :: tuple()
   def create_wallet(password, path) do
     create_wallet(password, path, "", [])
   end
 
-  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) :: String.t()
-  def create_wallet(password, path, pass_phrase \\ "", opts \\ []) do
+  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) :: tuple()
+  def create_wallet(password, path, pass_phrase, opts \\ []) do
     mnemonic_phrase = Mnemonic.generate_phrase(Indexes.generate_indexes)
     Wallet.import_wallet(mnemonic_phrase, password, path, pass_phrase, opts)
   end
@@ -67,13 +67,13 @@ defmodule Aewallet.Wallet do
   Creates a wallet file from an existing mnemonic_phrase and password
   If the wallet was not password protected, just pass the mnemonic_phrase
   """
-  @spec import_wallet(String.t(), String.t(), String.t()) :: String.t()
+  @spec import_wallet(String.t(), String.t(), String.t()) :: tuple()
   def import_wallet(mnemonic_phrase, password, path) do
     import_wallet(mnemonic_phrase, password, path, "", [])
   end
 
-  @spec import_wallet(String.t(), String.t(), String.t(), String.t(), wallet_opts()) :: String.t()
-  def import_wallet(mnemonic_phrase, password, path, pass_phrase \\ "", opts \\ []) do
+  @spec import_wallet(String.t(), String.t(), String.t(), String.t(), wallet_opts()) :: tuple()
+  def import_wallet(mnemonic_phrase, password, path, pass_phrase, opts \\ []) do
     type = Keyword.get(opts, :type, :ae)
 
     {:ok, wallet_data} = build_wallet(mnemonic_phrase, pass_phrase, type)
@@ -279,9 +279,6 @@ defmodule Aewallet.Wallet do
 
         pass_phrase ->
           {:ok, mnemonic, wallet_type, pass_phrase}
-
-        _ ->
-          {:ok, mnemonic, wallet_type, ""}
       end
     else
       {:error, "Invalid password"}
