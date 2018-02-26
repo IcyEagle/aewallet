@@ -52,13 +52,15 @@ defmodule Aewallet.Wallet do
       {:ok, "whisper edit clump violin blame few ancient casual
       sand trip update spring", "home/desktop/wallet/...", :btc}
   """
-  @spec create_wallet(String.t(), String.t()) :: String.t()
+  @spec create_wallet(String.t(), String.t()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
   def create_wallet(password, path) do
     create_wallet(password, path, "", [])
   end
 
-  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) :: String.t()
-  def create_wallet(password, path, pass_phrase \\ "", opts \\ []) do
+  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
+  def create_wallet(password, path, pass_phrase, opts \\ []) do
     mnemonic_phrase = Mnemonic.generate_phrase(Indexes.generate_indexes)
     Wallet.import_wallet(mnemonic_phrase, password, path, pass_phrase, opts)
   end
@@ -67,17 +69,19 @@ defmodule Aewallet.Wallet do
   Creates a wallet file from an existing mnemonic_phrase and password
   If the wallet was not password protected, just pass the mnemonic_phrase
   """
-  @spec import_wallet(String.t(), String.t(), String.t()) :: String.t()
+  @spec import_wallet(String.t(), String.t(), String.t()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
   def import_wallet(mnemonic_phrase, password, path) do
     import_wallet(mnemonic_phrase, password, path, "", [])
   end
 
-  @spec import_wallet(String.t(), String.t(), String.t(), String.t(), wallet_opts()) :: String.t()
-  def import_wallet(mnemonic_phrase, password, path, pass_phrase \\ "", opts \\ []) do
+  @spec import_wallet(String.t(), String.t(), String.t(), String.t(), wallet_opts()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
+  def import_wallet(mnemonic_phrase, password, path, pass_phrase, opts \\ []) do
     type = Keyword.get(opts, :type, :ae)
 
     {:ok, wallet_data} = build_wallet(mnemonic_phrase, pass_phrase, type)
-    {:ok, file_path} = save_wallet_file(wallet_data, password, path)
+    {:ok, file_path} = save_wallet_file!(wallet_data, password, path)
     {:ok, mnemonic_phrase, file_path, type}
   end
 
@@ -227,8 +231,8 @@ defmodule Aewallet.Wallet do
     end
   end
 
-  @spec save_wallet_file(String.t(), String.t(), String.t()) :: tuple()
-  defp save_wallet_file(wallet_data, password, path) do
+  @spec save_wallet_file!(String.t(), String.t(), String.t()) :: tuple()
+  defp save_wallet_file!(wallet_data, password, path) do
     {{year, month, day}, {hours, minutes, seconds}} = :calendar.local_time()
     file_name = "wallet--#{year}-#{month}-#{day}-#{hours}-#{minutes}-#{seconds}"
 
@@ -252,7 +256,7 @@ defmodule Aewallet.Wallet do
         {:ok, file_path}
 
       {:error, message} ->
-        throw("The path you have given has thrown an #{message} error!")
+        throw({:error, "The path you have given has thrown an #{message} error!"})
     end
   end
 
@@ -279,9 +283,6 @@ defmodule Aewallet.Wallet do
 
         pass_phrase ->
           {:ok, mnemonic, wallet_type, pass_phrase}
-
-        _ ->
-          {:ok, mnemonic, wallet_type, ""}
       end
     else
       {:error, "Invalid password"}
