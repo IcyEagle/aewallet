@@ -52,12 +52,14 @@ defmodule Aewallet.Wallet do
       {:ok, "whisper edit clump violin blame few ancient casual
       sand trip update spring", "home/desktop/wallet/...", :btc}
   """
-  @spec create_wallet(String.t(), String.t()) :: tuple()
+  @spec create_wallet(String.t(), String.t()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
   def create_wallet(password, path) do
     create_wallet(password, path, "", [])
   end
 
-  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) :: tuple()
+  @spec create_wallet(String.t(), String.t(), String.t(), wallet_opts()) ::
+  {:ok, String.t(), String.t(), wallet_type()} | {:error, String.t()}
   def create_wallet(password, path, pass_phrase, opts \\ []) do
     mnemonic_phrase = Mnemonic.generate_phrase(Indexes.generate_indexes)
     Wallet.import_wallet(mnemonic_phrase, password, path, pass_phrase, opts)
