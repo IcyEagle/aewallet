@@ -103,6 +103,28 @@ defmodule Aewallet.Wallet do
   end
 
   @doc """
+  Gets the seed of the wallet.
+
+  ## Examples
+      iex> Wallet.get_seed(file_path, password)
+      {:ok, seed}
+  """
+  @spec get_seed(String.t(), String.t()) :: {:ok, binary()} | {:error, String.t()}
+  def get_seed(file_path, password) do
+    case load_wallet_file(file_path, password) do
+      {:ok, mnemonic, wallet_type, pass_phrase} ->
+        seed =
+          mnemonic
+          |> KeyPair.generate_seed(pass_phrase)
+
+        {:ok, seed}
+
+      {:error, message} ->
+        {:error, message}
+    end
+  end
+
+  @doc """
   Gets the private key. Will only return a private key if
   the password is correct. Set a desired network with the options
   The default network is `:mainnet`.
@@ -117,20 +139,16 @@ defmodule Aewallet.Wallet do
 
   ## Examples
       iex> Wallet.get_private_key(file_path, password)
-      {:ok, <<100, 208, 92, 132, 43, 104, 6, 55, 125, 18, 18, 215, 98, 8, 245, 12, 78, 92,
-      89, 115, 59, 231, 28, 142, 137, 119, 62, 19, 102, 238, 171, 185>>}
-
-      iex> Wallet.get_private_key(file_path, password, network: :mainnet)
       {:ok, private_key_for_mainnet}
 
       iex> Wallet.get_private_key(file_path, password, network: :testnet)
       {:ok, private_key_for_testnet}
   """
-  @spec get_private_key(String.t(), String.t(), network_opts()) :: tuple()
+  @spec get_private_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_private_key(file_path, password, opts \\ []) do
     network = Keyword.get(opts, :network, :mainnet)
 
-    case Wallet.load_wallet_file(file_path, password) do
+    case load_wallet_file(file_path, password) do
       {:ok, mnemonic, wallet_type, pass_phrase} ->
         private_key =
           mnemonic
@@ -158,27 +176,26 @@ defmodule Aewallet.Wallet do
     * `:testnet`
 
   ## Examples
-      iex> Wallet.get_public_key(wallet_path, password)
-      {:ok, <<4, 210, 200, 166, 81, 219, 54, 116, 39, 64, 199, 57, 55, 152, 204, 119, 237,
-      168, 175, 243, 132, 39, 71, 208, 94, 138, 190, 242, 78, 74, 141, 43, 58, 241,
-      15, 19, 179, 45, 42, 79, 118, 24, 160, 20, 64, 178, 109, 124, 172, 127, ...>>, wallet_type}
-
-      iex> Wallet.get_public_key(file_path, password, network: :mainnet)
+      iex> Wallet.get_public_key(file_path, password)
       {:ok, public_key_for_mainnet}
 
       iex> Wallet.get_public_key(file_path, password, network: :testnet)
       {:ok, public_key_for_testnet}
   """
-  @spec get_public_key(String.t(), String.t(), network_opts()) :: tuple()
+  @spec get_public_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_public_key(path, password, opts \\ []) do
-    {:ok, private_key} = Wallet.get_private_key(path, password, opts)
+    case get_private_key(path, password, opts) do
+      {:ok, private_key} ->
+            compressed_pub_key =
+          private_key
+          |> KeyPair.generate_pub_key()
+          |> KeyPair.compress()
 
-    compressed_pub_key =
-      private_key
-      |> KeyPair.generate_pub_key()
-      |> KeyPair.compress()
+        {:ok, compressed_pub_key}
 
-    {:ok, compressed_pub_key}
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 
   @doc """
@@ -197,19 +214,16 @@ defmodule Aewallet.Wallet do
       iex> Wallet.get_address(file_path, password)
       {:ok, "A1M51tw1MixFCe64g6ExhCEXnowEGrQ2DE"}
 
-      iex> Wallet.get_address(file_path, password, network: :mainnet)
-      {:ok, "A1M51tw1MixFCe64g6ExhCEXnowEGrQ2DE"}
-
       iex> Wallet.get_address(file_path, password, network: :tesnet)
       {:ok, "T6d3d2a14FiXGe17g8ExhCBAnfe4GrD2h5"}
   """
-  @spec get_address(String.t(), String.t(), network_opts()) :: tuple()
+  @spec get_address(String.t(), String.t(), network_opts()) :: {:ok, String.t()} | {:error, String.t()}
   def get_address(file_path, password, opts \\ []) do
     network = Keyword.get(opts, :network, :mainnet)
 
     {:ok, _, wallet_type, _} = Wallet.load_wallet_file(file_path, password)
 
-    case Wallet.get_public_key(file_path, password) do
+    case get_public_key(file_path, password) do
       {:ok, pub_key} ->
         address = KeyPair.generate_wallet_address(pub_key, network, wallet_type)
         {:ok, address}
@@ -260,7 +274,8 @@ defmodule Aewallet.Wallet do
     end
   end
 
-  @spec load_wallet(tuple(), String.t()) :: tuple()
+  @spec load_wallet({:ok | :error, binary()}, String.t()) ::
+  {:ok, String.t(), wallet_type(), String.t() | :error, String.t()}
   defp load_wallet({:ok, encrypted_data}, password) do
     wallet_data = Cypher.decrypt(encrypted_data, password)
 
