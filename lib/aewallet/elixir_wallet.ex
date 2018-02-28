@@ -109,7 +109,7 @@ defmodule Aewallet.Wallet do
       iex> Wallet.get_seed(file_path, password)
       {:ok, seed}
   """
-  @spec get_private_key(String.t(), String.t(), network_opts()) :: {:ok, binary() | :error, String.t()}
+  @spec get_seed(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_seed(file_path, password) do
     case load_wallet_file(file_path, password) do
       {:ok, mnemonic, wallet_type, pass_phrase} ->
@@ -144,7 +144,7 @@ defmodule Aewallet.Wallet do
       iex> Wallet.get_private_key(file_path, password, network: :testnet)
       {:ok, private_key_for_testnet}
   """
-  @spec get_private_key(String.t(), String.t(), network_opts()) :: {:ok, binary() | :error, String.t()}
+  @spec get_private_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_private_key(file_path, password, opts \\ []) do
     network = Keyword.get(opts, :network, :mainnet)
 
@@ -182,7 +182,7 @@ defmodule Aewallet.Wallet do
       iex> Wallet.get_public_key(file_path, password, network: :testnet)
       {:ok, public_key_for_testnet}
   """
-  @spec get_public_key(String.t(), String.t(), network_opts()) :: {:ok, binary() | :error, String.t()}
+  @spec get_public_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_public_key(path, password, opts \\ []) do
     case get_private_key(path, password, opts) do
       {:ok, private_key} ->
@@ -217,7 +217,7 @@ defmodule Aewallet.Wallet do
       iex> Wallet.get_address(file_path, password, network: :tesnet)
       {:ok, "T6d3d2a14FiXGe17g8ExhCBAnfe4GrD2h5"}
   """
-  @spec get_address(String.t(), String.t(), network_opts()) :: {:ok, String.t() | :error, String.t()}
+  @spec get_address(String.t(), String.t(), network_opts()) :: {:ok, String.t()} | {:error, String.t()}
   def get_address(file_path, password, opts \\ []) do
     network = Keyword.get(opts, :network, :mainnet)
 
