@@ -64,6 +64,12 @@ defmodule Aewallet.KeyPair do
   end
 
   @doc """
+  Generates keypair using the curve :curve25519
+  """
+  @spec generate_keypair() :: map()
+  def generate_keypair(), do: :enacl.sign_keypair()
+
+  @doc """
   Generates master private extended key. Where you can state the network
   the key should be working on and select a type of key. The default network
   is `:mainnet` and the default key type is `:ae`
@@ -106,6 +112,7 @@ defmodule Aewallet.KeyPair do
   for {type, wallet_type} <- [ae: :ae, btc: :btc] do
     defp build_master_key(<<priv_key::binary-32, c_code::binary>>, network, unquote(type)) do
       key = PrivKey.create(network, unquote(wallet_type))
+
       %{key | key: priv_key, chain_code: c_code}
     end
   end

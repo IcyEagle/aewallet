@@ -12,9 +12,14 @@ defmodule Aewallet.Signing do
       93, 47, 64, 11, 104, 94, 240, 192, 240, 229, 55, 137, 226, 15, 119, 156, 52,
       165, 170, 163, 2, 33, 0, 234, 132, 82, 122, 244, 209, 148, 232, 124, 216, ...>>
   """
-  @spec sign(binary(), binary()) :: binary()
-  def sign(data, privkey_bin) do
-    :crypto.sign(:ecdsa, :sha256, data, [privkey_bin, :secp256k1])
+  @spec sign(binary(), binary(), list()) :: binary()
+  def sign(data, privkey_bin, opts \\ []) do
+    type = Keyword.get(opts, :type, :enacl)
+
+    case type do
+      :enacl -> :enacl.sign(data, privkey_bin)
+      :crypto -> :crypto.sign(:ecdsa, :sha256, data, [privkey_bin, :secp256k1])
+    end
   end
 
   @doc """
@@ -31,12 +36,13 @@ defmodule Aewallet.Signing do
 
       :true
   """
-  @spec verify(binary(), binary(), binary()) :: boolean()
-  def verify(data, signature_bin, pubkey_bin) do
-    if :crypto.verify(:ecdsa, :sha256, data, signature_bin, [pubkey_bin, :secp256k1]) do
-      :true
-    else
-      :false
+  @spec verify(binary(), binary(), binary(), list()) :: boolean()
+  def verify(data, signature_bin, pubkey_bin, opts \\ []) do
+    type = Keyword.get(opts, :type, :enacl)
+
+    case type do
+      :enacl -> {:ok, data} == :enacl.sign_verify_detached(signature_bin, data, pubkey_bin)
+      :crypto -> :crypto.verify(:ecdsa, :sha256, data, signature_bin, [pubkey_bin, :secp256k1])
     end
   end
 end

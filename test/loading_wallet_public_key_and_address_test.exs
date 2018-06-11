@@ -5,54 +5,46 @@ defmodule LoadPublicKeyAndAddressTest do
   alias Aewallet.Wallet, as: Wallet
   alias Aewallet.Cypher, as: Cypher
 
-  test "validate master public key and address 1" do
-    wallet_data = Wallet.load_wallet_file("test/test_wallets/wallet--2018-1-17-11-59-25", "password")
-    assert wallet_data =
-    {:ok, "day slot wink brother tip program motion kite trash excuse assume debris", :ae}
-
+  test "validate keypair 1" do
     {:ok, public_key} =
-      Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-11-59-25", "password")
+      Wallet.get_public_key("test/test_wallets/wallet--2018-6-11-14-13-40", "pass")
 
     assert public_key ==
-      Base.decode16!("0243C79213D6301FB19C50CEFCBBC2EE80CD53ACEFE9D4FB1FEE4E1DD3863F6430")
+      Base.decode16!("CA972C827479476650ADD1E2ABE4423F6B844B56CF111B3A8D01E6038CA80431")
 
-    {:ok, address} =
-      Wallet.get_address("test/test_wallets/wallet--2018-1-17-11-59-25", "password")
+    {:ok, private_key} =
+      Wallet.get_private_key("test/test_wallets/wallet--2018-6-11-14-13-40", "pass")
 
-    assert address == "ApgKtK5yi3npi3c48U53ESegbHSfsyYWWU"
+    assert private_key ==
+      Base.decode16!("3F656FB0072141A44CC6A5124C6962D8C9B05F39E2169F6053567465A45AD80CCA972C827479476650ADD1E2ABE4423F6B844B56CF111B3A8D01E6038CA80431")
   end
 
-  test "validate master public key and address 2" do
-    wallet_data = Wallet.load_wallet_file("test/test_wallets/wallet--2018-1-17-12-9-55", "password")
-    assert wallet_data =
-    {:ok, "bacon olympic warfare link crystal liberty mechanic husband age scan glance job", :btc}
-
+  test "validate keypair 2" do
     {:ok, public_key} =
-      Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-12-9-55", "password")
+      Wallet.get_public_key("test/test_wallets/wallet--2018-6-11-14-25-59", "pass")
 
     assert public_key ==
-      Base.decode16!("02C64160211603FB738BFD69AFEC4BC675D7AEDB7BDD06D5CC661D33EA3021AAD4")
+      Base.decode16!("AB72BDF6357A0C543E2CE9C136F49CFCFEC76008EB312366D0C37408C239F2F3")
 
-    {:ok, address} =
-      Wallet.get_address("test/test_wallets/wallet--2018-1-17-12-9-55", "password")
+    {:ok, private_key} =
+      Wallet.get_private_key("test/test_wallets/wallet--2018-6-11-14-25-59", "pass")
 
-    assert address == "121jXTz93jqEqDSp2gSJCKTBvbWYWeJD8i"
+    assert private_key ==
+      Base.decode16!("4D11CA666EFEFE622D6013188F072537AD88E92C0692300685C25078E24B615EAB72BDF6357A0C543E2CE9C136F49CFCFEC76008EB312366D0C37408C239F2F3")
   end
 
-   test "validate master public key and address 3" do
-    wallet_data = Wallet.load_wallet_file("test/test_wallets/wallet--2018-1-17-12-12-16", "password")
-    assert wallet_data =
-    {:ok, "dial prevent prize already actual hammer alarm warfare crunch recipe tide bind", :ae, "1234"}
-
+   test "validate keypairo
+ 3" do
     {:ok, public_key} =
-      Wallet.get_public_key("test/test_wallets/wallet--2018-1-17-12-12-16", "password")
+      Wallet.get_public_key("test/test_wallets/wallet--2018-6-11-14-27-39", "pass")
 
     assert public_key ==
-      Base.decode16!("02169FE30E399CC4B6BF5CFCB8CD7091D462D5B50E8082C7D9C0A54080E77BE056")
+      Base.decode16!("44018C5A75F39AB027872AB2017D881013A7F700C82B5790D8BEDCD7E28C45AD")
 
-    {:ok, address} =
-      Wallet.get_address("test/test_wallets/wallet--2018-1-17-12-12-16", "password")
+    {:ok, private_key} =
+      Wallet.get_private_key("test/test_wallets/wallet--2018-6-11-14-27-39", "pass")
 
-    assert address == "AsZ6sZxqJrD7WGYBURJnKpxdJKSfyjK1j9"
+    assert private_key ==
+      Base.decode16!("DD0D4DE7AE3319D8D24581864040DB6070905895D24A059072F6F358A675DBC244018C5A75F39AB027872AB2017D881013A7F700C82B5790D8BEDCD7E28C45AD")
   end
 end
