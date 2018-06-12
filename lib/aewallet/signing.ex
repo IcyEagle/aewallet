@@ -2,9 +2,18 @@ defmodule Aewallet.Signing do
   @moduledoc """
   Module for signing and verifying transactions using the ECDSA algorithm
   """
-
+  
   @doc """
-   Signs a transaction using a private key
+  Signs a transaction using a private key
+
+  ## Options
+  The accepted options are:
+    * `:curve` - specifies the curve
+
+  The values for `:curve` can be:
+    * `:ed25519` - (default)
+    * `:secp256k1`
+
   ## Examples
       iex> Signing.sign(<<0,1>>, <<100, 208, 92, 132, 43, 104, 6, 55, 125, 18, 18, 215, 98, 8, 245, 12, 78, 92,
       89, 115, 59, 231, 28, 142, 137, 119, 62, 19, 102, 238, 171, 185>>)
@@ -14,16 +23,25 @@ defmodule Aewallet.Signing do
   """
   @spec sign(binary(), binary(), list()) :: binary()
   def sign(data, privkey_bin, opts \\ []) do
-    type = Keyword.get(opts, :type, :enacl)
+    curve = Keyword.get(opts, :curve, :ed25519)
 
-    case type do
-      :enacl -> :enacl.sign(data, privkey_bin)
-      :crypto -> :crypto.sign(:ecdsa, :sha256, data, [privkey_bin, :secp256k1])
+    case curve do
+      :ed25519 -> :enacl.sign(data, privkey_bin)
+      :secp256k1 -> :crypto.sign(:ecdsa, :sha256, data, [privkey_bin, :secp256k1])
     end
   end
 
   @doc """
    Verifies a signed transaction using a public key
+
+  ## Options
+  The accepted options are:
+    * `:curve` - specifies the curve
+
+  The values for `:curve` can be:
+    * `:ed25519` - (default)
+    * `:secp256k1`
+
   ## Examples
       iex> Signing.verify
       (<<0,1>>,
@@ -38,11 +56,11 @@ defmodule Aewallet.Signing do
   """
   @spec verify(binary(), binary(), binary(), list()) :: boolean()
   def verify(data, signature_bin, pubkey_bin, opts \\ []) do
-    type = Keyword.get(opts, :type, :enacl)
+    curve = Keyword.get(opts, :curve, :ed25519)
 
-    case type do
-      :enacl -> {:ok, data} == :enacl.sign_verify_detached(signature_bin, data, pubkey_bin)
-      :crypto -> :crypto.verify(:ecdsa, :sha256, data, signature_bin, [pubkey_bin, :secp256k1])
+    case curve do
+      :ed25519 -> {:ok, data} == :enacl.sign_verify_detached(signature_bin, data, pubkey_bin)
+      :secp256k1 -> :crypto.verify(:ecdsa, :sha256, data, signature_bin, [pubkey_bin, :secp256k1])
     end
   end
 end
