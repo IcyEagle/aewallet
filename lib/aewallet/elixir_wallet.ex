@@ -116,7 +116,7 @@ defmodule Aewallet.Wallet do
   @spec get_seed(String.t(), String.t()) :: {:ok, binary()} | {:error, String.t()}
   def get_seed(file_path, password) do
     case load_wallet_file(file_path, password) do
-      {:ok, mnemonic, wallet_type, pass_phrase} ->
+      {:ok, mnemonic, _, pass_phrase} ->
         seed =
           mnemonic
           |> KeyPair.generate_seed(pass_phrase)
@@ -161,7 +161,7 @@ defmodule Aewallet.Wallet do
 
         {:ok, private_key.key}
 
-      {:ok, pubkey, privkey} ->
+      {:ok, _, privkey} ->
         {:ok, privkey}
 
       {:error, message} ->
@@ -192,7 +192,7 @@ defmodule Aewallet.Wallet do
   @spec get_public_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
   def get_public_key(file_path, password, opts \\ []) do
     case load_wallet_file(file_path, password) do
-      {:ok, mnemonic, wallet_type, pass_phrase} ->
+      {:ok, _, _, _} ->
         case get_private_key(file_path, password, opts) do
           {:ok, private_key} ->
             compressed_pub_key =
@@ -206,7 +206,7 @@ defmodule Aewallet.Wallet do
             {:error, reason}
         end
 
-      {:ok, pubkey, privkey} ->
+      {:ok, pubkey, _} ->
         {:ok, pubkey}
 
       err ->
@@ -251,7 +251,7 @@ defmodule Aewallet.Wallet do
 
   ## Private functions
 
-  defp build_wallet(_, pass_phrase, :ae) do
+  defp build_wallet(_, _, :ae) do
     %{public: pubkey, secret: privkey} = KeyPair.generate_keypair()
     enc_pub = Base.encode16(pubkey)
     enc_priv = Base.encode16(privkey)
@@ -266,13 +266,14 @@ defmodule Aewallet.Wallet do
   end
 
   defp build_wallet(mnemonic, pass_phrase, :btc) do
-    {:ok, @secp256k1
-    |> Kernel.<>(" ")
-    |> Kernel.<>(mnemonic)
-    |> Kernel.<>(" ")
-    |> Kernel.<>(Atom.to_string(:btc))
-    |> Kernel.<>(" ")
-    |> Kernel.<>(pass_phrase)}
+    {:ok,
+     @secp256k1
+     |> Kernel.<>(" ")
+     |> Kernel.<>(mnemonic)
+     |> Kernel.<>(" ")
+     |> Kernel.<>(Atom.to_string(:btc))
+     |> Kernel.<>(" ")
+     |> Kernel.<>(pass_phrase)}
   end
 
   @spec save_wallet_file!(String.t(), String.t(), String.t()) :: tuple()

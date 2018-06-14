@@ -2,10 +2,10 @@ defmodule Aewallet.Signing do
   @moduledoc """
   Module for signing and verifying transactions using the ECDSA algorithm
   """
-  
+
   @doc """
   Signs a transaction using a private key
-
+  
   ## Options
   The accepted options are:
     * `:curve` - specifies the curve

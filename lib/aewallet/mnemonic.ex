@@ -13,7 +13,7 @@ defmodule Aewallet.Mnemonic do
   """
   @spec generate_phrase(list()) :: String.t()
   def generate_phrase(rows) do
-    phrase = for row <- rows do
+    for row <- rows do
       elem(get_wordlist(), row) <> " "
     end
     |> List.to_string()

@@ -67,7 +67,7 @@ defmodule Aewallet.KeyPair do
   Generates keypair using the curve :curve25519
   """
   @spec generate_keypair() :: map()
-  def generate_keypair(), do: :enacl.sign_keypair()
+  def generate_keypair, do: :enacl.sign_keypair()
 
   @doc """
   Generates master private extended key. Where you can state the network
