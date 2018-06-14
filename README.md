@@ -155,7 +155,7 @@ sudo apt-get install libgmp3-dev
 
 wget -O libsodium-src.tar.gz https://github.com/jedisct1/libsodium/releases/download/1.0.16/libsodium-1.0.16.tar.gz
 mkdir libsodium-src && tar -zxf libsodium-src.tar.gz -C libsodium-src --strip-components=1
-cd libsodium-src && ./configure && make && make check && sudo make install && cd ..
+cd libsodium-src && ./configure && make && make check && sudo make install && cd .. && sudo ldconfig
 ```
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
