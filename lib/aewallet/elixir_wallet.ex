@@ -28,6 +28,10 @@ defmodule Aewallet.Wallet do
   @typedoc "Network options list"
   @type network_opts :: [{network_key, network_value}]
 
+  @secp256k1 "0"
+
+  @curve25519 "1"
+
   @doc """
   Creates a wallet file. You can use the short function to create an Aeternity wallet
   without using pass_phrase, or use the full function and fill the parameters.
@@ -157,6 +161,9 @@ defmodule Aewallet.Wallet do
 
         {:ok, private_key.key}
 
+      {:ok, _, privkey} ->
+        {:ok, privkey}
+
       {:error, message} ->
         {:error, message}
     end
@@ -183,18 +190,27 @@ defmodule Aewallet.Wallet do
       {:ok, public_key_for_testnet}
   """
   @spec get_public_key(String.t(), String.t(), network_opts()) :: {:ok, binary()} | {:error, String.t()}
-  def get_public_key(path, password, opts \\ []) do
-    case get_private_key(path, password, opts) do
-      {:ok, private_key} ->
+  def get_public_key(file_path, password, opts \\ []) do
+    case load_wallet_file(file_path, password) do
+      {:ok, _, _, _} ->
+        case get_private_key(file_path, password, opts) do
+          {:ok, private_key} ->
             compressed_pub_key =
-          private_key
-          |> KeyPair.generate_pub_key()
-          |> KeyPair.compress()
+              private_key
+              |> KeyPair.generate_pub_key()
+              |> KeyPair.compress()
 
-        {:ok, compressed_pub_key}
+            {:ok, compressed_pub_key}
 
-      {:error, reason} ->
-        {:error, reason}
+          {:error, reason} ->
+            {:error, reason}
+        end
+
+      {:ok, pubkey, _} ->
+        {:ok, pubkey}
+
+      err ->
+        err
     end
   end
 
@@ -235,14 +251,29 @@ defmodule Aewallet.Wallet do
 
   ## Private functions
 
-  for {type, wallet_type} <- [ae: :ae, btc: :btc] do
-    defp build_wallet(mnemonic, pass_phrase, unquote(type)) do
-      {:ok, mnemonic
-            |> Kernel.<>(" ")
-            |> Kernel.<>(Atom.to_string(unquote(wallet_type)))
-            |> Kernel.<>(" ")
-            |> Kernel.<>(pass_phrase)}
-    end
+  defp build_wallet(_, _, :ae) do
+    %{public: pubkey, secret: privkey} = KeyPair.generate_keypair()
+    enc_pub = Base.encode16(pubkey)
+    enc_priv = Base.encode16(privkey)
+
+    data = @curve25519
+    |> Kernel.<>(" ")
+    |> Kernel.<>(enc_pub)
+    |> Kernel.<>(" ")
+    |> Kernel.<>(enc_priv)
+
+    {:ok, data}
+  end
+
+  defp build_wallet(mnemonic, pass_phrase, :btc) do
+    {:ok,
+     @secp256k1
+     |> Kernel.<>(" ")
+     |> Kernel.<>(mnemonic)
+     |> Kernel.<>(" ")
+     |> Kernel.<>(Atom.to_string(:btc))
+     |> Kernel.<>(" ")
+     |> Kernel.<>(pass_phrase)}
   end
 
   @spec save_wallet_file!(String.t(), String.t(), String.t()) :: tuple()
@@ -282,27 +313,40 @@ defmodule Aewallet.Wallet do
     if String.valid? wallet_data do
       data_list = String.split(wallet_data)
 
-      mnemonic =
-        data_list
-        |> Enum.slice(0..11)
-        |> Enum.join(" ")
+      case List.first(data_list) do
+        @curve25519 ->
+          {enc_pub, _} = List.pop_at(data_list, 1)
+          pubkey = Base.decode16!(enc_pub)
 
-      wallet_type =
-        data_list
-        |> Enum.at(12)
-        |> String.to_atom()
+          {enc_priv, _} = List.pop_at(data_list, 2)
+          privkey = Base.decode16!(enc_priv)
 
-      case Enum.at(data_list, 13) do
-        :nil ->
-          {:ok, mnemonic, wallet_type, ""}
+          {:ok, pubkey, privkey}
 
-        pass_phrase ->
-          {:ok, mnemonic, wallet_type, pass_phrase}
+        @secp256k1 ->
+          mnemonic =
+            data_list
+            |> Enum.slice(0..11)
+            |> Enum.join(" ")
+
+          wallet_type =
+            data_list
+            |> Enum.at(12)
+            |> String.to_atom()
+
+          case Enum.at(data_list, 13) do
+            :nil ->
+              {:ok, mnemonic, wallet_type, ""}
+
+            pass_phrase ->
+              {:ok, mnemonic, wallet_type, pass_phrase}
+          end
       end
     else
       {:error, "Invalid password"}
     end
   end
+
   defp load_wallet({:error, reason}, _password) do
     case reason do
       :enoent ->

@@ -34,7 +34,8 @@ defmodule Aewallet.Mixfile do
       {:excoveralls, "~> 0.7", only: :test},
       {:credo, "~> 0.8", only: [:dev, :test], runtime: false},
       {:bip0173, "~> 0.1.2"},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
+      {:enacl, github: "aeternity/enacl", ref: "2f50ba6", override: true}
     ]
   end
 end

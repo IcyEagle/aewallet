@@ -128,8 +128,22 @@ For the address use the following Network bytes:
 `mainnet = 0x18`
 `testnet = 0x42`
 
+## Deriving keypairs with enacl
+```elixir
+Aewallet.KeyPair.generate_keypair()
+```
+## Signing
 
+Signing could be done for both `:secp256k1` and `:ed25519` curve
 
+The code looks like this
+```elixir
+Aewallet.Signing.sign(data, privkey, opts)
+```
+
+The options accept only a `:curve` value that could either be `:ed25519` or `:secp256k1`, if none is specified `:ed25519` will be used by default
+
+The verifying goes the same way as the signing
 
 ## Installation
 
@@ -138,6 +152,10 @@ Make sure you have installed the following packages to make sure that the depend
 sudo apt-get install autoconf autogen
 sudo apt-get install libtool
 sudo apt-get install libgmp3-dev
+
+wget -O libsodium-src.tar.gz https://github.com/jedisct1/libsodium/releases/download/1.0.16/libsodium-1.0.16.tar.gz
+mkdir libsodium-src && tar -zxf libsodium-src.tar.gz -C libsodium-src --strip-components=1
+cd libsodium-src && ./configure && make && make check && sudo make install && cd .. && sudo ldconfig
 ```
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
