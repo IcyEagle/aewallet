@@ -112,7 +112,7 @@ defmodule Aewallet.Wallet do
   @spec get_seed(String.t(), String.t()) :: {:ok, binary()} | {:error, String.t()}
   def get_seed(file_path, password) do
     case load_wallet_file(file_path, password) do
-      {:ok, mnemonic, wallet_type, pass_phrase} ->
+      {:ok, mnemonic, _, pass_phrase} ->
         seed =
           mnemonic
           |> KeyPair.generate_seed(pass_phrase)

@@ -4,8 +4,6 @@ defmodule Aewallet.Encoding do
   in Bech32. This implementation is from BIP-0173.
   """
 
-  alias Aewallet.KeyPair
-
   @typedoc "Currency types for pubkey formatting"
   @type currency :: :ae | :btc
 
