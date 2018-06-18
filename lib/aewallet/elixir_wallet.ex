@@ -30,7 +30,7 @@ defmodule Aewallet.Wallet do
 
   @secp256k1 "0"
 
-  @curve25519 "1"
+  @ed25519 "1"
 
   @doc """
   Creates a wallet file. You can use the short function to create an Aeternity wallet
@@ -256,7 +256,7 @@ defmodule Aewallet.Wallet do
     enc_pub = Base.encode16(pubkey)
     enc_priv = Base.encode16(privkey)
 
-    data = @curve25519
+    data = @ed25519
     |> Kernel.<>(" ")
     |> Kernel.<>(enc_pub)
     |> Kernel.<>(" ")
@@ -314,7 +314,7 @@ defmodule Aewallet.Wallet do
       data_list = String.split(wallet_data)
 
       case List.first(data_list) do
-        @curve25519 ->
+        @ed25519 ->
           {enc_pub, _} = List.pop_at(data_list, 1)
           pubkey = Base.decode16!(enc_pub)
 
@@ -326,12 +326,12 @@ defmodule Aewallet.Wallet do
         @secp256k1 ->
           mnemonic =
             data_list
-            |> Enum.slice(0..11)
+            |> Enum.slice(0..12)
             |> Enum.join(" ")
 
           wallet_type =
             data_list
-            |> Enum.at(12)
+            |> Enum.at(13)
             |> String.to_atom()
 
           case Enum.at(data_list, 13) do
